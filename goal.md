@@ -1,0 +1,7 @@
+- Implement basic authentication for clients to authenticate with the server. This can be done by checking the Authorization header in the HTTP requests.
+- Implement authorization logic to restrict clients to only access their own data. This can be done by checking the client ID against the resource being requested.
+- Create HTTP handlers for POST requests to accept file uploads. Read the uploaded files from the request body.
+- Save the uploaded files to disk in a directory named after the client ID ("./uploads/${clientId}").
+- Make sure the server only serves authorized clients their own data.
+- Add any other required logic for file uploads like validation, error handling etc.
+- Make sure the server follows best practices around security, scalability and reliability.
