@@ -1,7 +1,16 @@
 <script lang="ts">
+  import { imageUrls } from "@/lib/store";
+
   let searchQuery: string = "";
-  function onSubmit(event: Event) {
-    console.log(searchQuery);
+
+  async function onSubmit(event: Event) {
+    try {
+      const res = await fetch(`/api/search?q=${searchQuery}`);
+      const json = (await res.json()) as string[];
+      imageUrls.set(json);
+    } catch (e) {
+      console.error("Request Failed", e);
+    }
   }
 </script>
 

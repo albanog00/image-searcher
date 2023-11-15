@@ -2,7 +2,7 @@
 import "@/styles.css";
 
 import Layout from "@/layouts/Layout.astro";
-import ImageGallery from "@/components/ImageGallery.astro";
+import ImageGallery from "@/components/ImageGallery.svelte";
 import SearchForm from "@/components/SearchForm.svelte";
 ---
 
@@ -10,8 +10,8 @@ import SearchForm from "@/components/SearchForm.svelte";
   <main class="flex flex-col gap-4 px-24 py-12">
     <div class="m-auto flex max-w-7xl flex-col items-center gap-4">
       <h1 class="flex flex-col text-6xl font-bold">Image Searcher</h1>
-      <SearchForm client:only />
+      <SearchForm client:only="svelte" />
     </div>
-    <ImageGallery />
+    <ImageGallery client:only="svelte" />
   </main>
 </Layout>
