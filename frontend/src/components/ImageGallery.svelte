@@ -1,5 +1,6 @@
 <script lang="ts">
   import { imageUrls } from "@/lib/store";
+  import Image from "./Image.svelte";
 </script>
 
 <section
@@ -8,14 +9,7 @@
 >
   {#if $imageUrls}
     {#each $imageUrls?.urls as imageUrl}
-      <div class="flex">
-        <img
-          alt="gallery"
-          class="h-auto max-w-full rounded-lg shadow-xl drop-shadow-xl transition duration-300 hover:z-10 hover:scale-110 hover:outline-none hover:ring-8 hover:ring-violet-300"
-          loading="lazy"
-          src={imageUrl}
-        />
-      </div>
+      <Image {imageUrl} />
     {/each}
   {/if}
 </section>
