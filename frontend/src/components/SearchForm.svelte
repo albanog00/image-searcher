@@ -1,49 +1,54 @@
 <script lang="ts">
   import { imageUrls } from "@/lib/store";
+  import { SearchState, type SearchResult } from "@/lib/types";
+  import { api } from "@/lib/api";
   import LoadingSpinner from "./LoadingSpinner.svelte";
-  import { convertToObject } from "typescript";
-
-  enum SearchState {
-    Default,
-    Finished,
-    Searching,
-    Error,
-  }
 
   let searchState: SearchState = SearchState.Default;
-
   let searchQuery: string = "";
-  let searchController = new AbortController();
-
-  function onAbort(this: AbortSignal, event: Event) {
-    searchState = SearchState.Error;
-  }
-  searchController.signal.addEventListener("abort", onAbort, {
-    once: false,
-  });
 
   async function onSubmit(event: Event) {
+    function onAbort(this: AbortSignal, event: Event) {
+      searchState = SearchState.Error;
+      console.log("Request aborted");
+    }
+
+    const searchController = new AbortController();
+    searchController.signal.addEventListener("abort", onAbort);
+
     searchState = SearchState.Searching;
     try {
-      const res = await fetch(`/api/search?q=${searchQuery}`, {
+      const res = await api<SearchResult>(`/search?q=${searchQuery}`, {
+        method: "GET",
         signal: searchController.signal,
       });
 
-      // Simulate server request
+      // Simulating server request
       await new Promise((resolve, reject) => {
         setTimeout(resolve, 1000);
       });
 
-      imageUrls.set((await res.json()) as string[]);
+      const json = await res.json();
+      imageUrls.set(json);
+
       searchState = SearchState.Finished;
     } catch (error) {
+      console.error(error);
+
+      searchController.abort();
+      imageUrls.set({ urls: [] });
+
       searchState = SearchState.Error;
-      console.error("Request Failed", error);
     }
+
+    searchController.signal.removeEventListener("abort", onAbort);
   }
 </script>
 
-<form on:submit|preventDefault={onSubmit}>
+<form
+  class="flex flex-col items-center justify-center"
+  on:submit|preventDefault={onSubmit}
+>
   <div class="grid grid-flow-col gap-2">
     <input
       bind:value={searchQuery}
@@ -64,4 +69,9 @@
       {/if}
     </button>
   </div>
+  {#if searchState === SearchState.Error}
+    <span class="text-red-600">
+      Error occurred while sending request to the server. Please try again.
+    </span>
+  {/if}
 </form>
