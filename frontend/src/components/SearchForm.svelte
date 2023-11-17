@@ -10,7 +10,6 @@
   async function onSubmit(event: Event) {
     function onAbort(this: AbortSignal, event: Event) {
       searchState = SearchState.Error;
-      console.log("Request aborted");
     }
 
     const searchController = new AbortController();
