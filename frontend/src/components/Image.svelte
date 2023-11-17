@@ -3,25 +3,13 @@
   export let imageUrl: string;
 
   let showFullImage = false;
-
-  const openFullImage = (event: Event) => {
-    showFullImage = true;
-  };
-
-  const closeFullImage = (event: Event) => {
-    showFullImage = false;
-  };
-
-  const handleKey = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      showFullImage = false;
-    }
-  };
+  const openFullImage = (event: Event) => (showFullImage = true);
+  const closeFullImage = (event: Event) => (showFullImage = false);
 </script>
 
 {#if showFullImage}
   <div class="space-y-0">
-    <ImageModal {imageUrl} {closeFullImage} {handleKey} />
+    <ImageModal {imageUrl} {closeFullImage} />
   </div>
 {/if}
 <div class="flex">

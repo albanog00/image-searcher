@@ -11,5 +11,5 @@ export const log = defineMiddleware((context, next) => {
         duration: undefined,
     });
 
-    console.log(context.request.method, context.request.url, `${elapsed.duration.toFixed(3)}ms`);
+    console.log(context.request.method, context.request.url, `served in ${elapsed.duration.toFixed(3)}ms`);
 });
