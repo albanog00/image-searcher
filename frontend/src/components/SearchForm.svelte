@@ -28,7 +28,7 @@
       });
 
       const json = await res.json();
-      imageUrls.set(json);
+      imageUrls.set(json.result?.data);
 
       searchState = SearchState.Finished;
     } catch (error) {

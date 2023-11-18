@@ -2,16 +2,17 @@ package main
 
 import (
 	"log"
-	"net/http"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"giuseppealbano.dev/img-searcher/internal/routes"
 )
 
 func main() {
-	routes.Setup()
+	app := fiber.New()
+	app.Use(logger.New())
 
-	log.Println("Listening on port 8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Listen: %v", err)
-	}
+	routes.Setup(app)
+
+	log.Fatal(app.Listen(":8080"))
 }

@@ -1,25 +1,21 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
-	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type SearchResult struct {
 	Urls []string `json:"urls"`
 }
 
-func SearchHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("/search handler called")
-
+func SearchHandler(c *fiber.Ctx) error {
 	// Retrieves query from url string
-	q := r.URL.Query().Get("q")
+	q := c.Query("q")
 	if q == "" {
-		http.Error(w, "query parameter is required", 400)
-		return
+		c.Status(fiber.StatusBadRequest).SendString("query parameter is required")
 	}
 
 	// TODO: Search images
@@ -35,14 +31,23 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	// return result as json or handle error
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	// json, err := json.Marshal(result)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	c.Status(fiber.StatusBadRequest)
+	// 	return c.JSON(fiber.Map{
+	// 		"message": "Failed to encode result",
+	// 		"status":  fiber.StatusBadRequest,
+	// 		"result":  nil,
+	// 	})
+	// }
 
-	err := json.NewEncoder(w).Encode(result)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
+	// return result as json
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Search results",
+		"status":  fiber.StatusOK,
+		"result": fiber.Map{
+			"data":  result,
+			"count": len(result.Urls)},
+	})
 }

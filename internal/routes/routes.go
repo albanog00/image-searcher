@@ -1,11 +1,10 @@
 package routes
 
 import (
-	"net/http"
-
+	"github.com/gofiber/fiber/v2"
 	"giuseppealbano.dev/img-searcher/internal/handlers"
 )
 
-func Setup() {
-	http.HandleFunc("/search", handlers.SearchHandler)
+func Setup(app *fiber.App) {
+	app.Get("/search", handlers.SearchHandler)
 }
