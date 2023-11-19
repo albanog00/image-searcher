@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/redis/go-redis/v9"
 	"giuseppealbano.dev/img-searcher/internal/db"
 )
 
@@ -18,6 +16,7 @@ type SearchResult struct {
 
 func SearchHandler(c *fiber.Ctx) error {
 	// Retrieves query from url string
+	page := c.QueryInt("page")
 	q := c.Query("q")
 	if q == "" {
 		c.Status(fiber.StatusBadRequest).SendString("query parameter is required")
@@ -35,9 +34,9 @@ func SearchHandler(c *fiber.Ctx) error {
 	}
 
 	var result SearchResult
-	res, err := redisClient.Client.Get(db.Ctx, q).Result()
-	if err == redis.Nil {
-		log.Printf("Key %s not found in Redis, searching...\n", q)
+	res := redisClient.Client.JSONGet(db.Ctx, q).Val()
+	if res == "" {
+		log.Printf("Key `%s` not found in Redis, searching...\n", q)
 
 		// Simulating images search
 		if len(result.Urls) == 0 {
@@ -52,26 +51,19 @@ func SearchHandler(c *fiber.Ctx) error {
 		}
 
 		// Cache result in redis
-		json, err := json.Marshal(result)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal Error",
-				"status":  fiber.StatusInternalServerError,
-				"result":  nil,
-			})
-		}
-		redisClient.Client.Set(db.Ctx, q, json, time.Hour*24)
+		redisClient.Client.JSONSet(db.Ctx, q, "$", result)
 	} else {
-		log.Printf("Key %s found in Redis\n", q)
+		log.Printf("Key `%s` found in Redis\n", q)
 
-		err = json.Unmarshal([]byte(res), &result)
-		if err != nil {
+		var results []SearchResult
+		if err = json.Unmarshal([]byte(res), &results); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": "Internal Error",
 				"status":  fiber.StatusInternalServerError,
 				"result":  nil,
 			})
 		}
+		result = results[page]
 	}
 
 	// return result as json
