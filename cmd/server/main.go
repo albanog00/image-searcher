@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
 	"giuseppealbano.dev/img-searcher/internal/routes"
 )
@@ -18,7 +19,7 @@ func init() {
 
 func main() {
 	app := fiber.New()
-	// app.Use(recover.New())
+	app.Use(recover.New())
 	app.Use(logger.New())
 
 	routes.Setup(app)

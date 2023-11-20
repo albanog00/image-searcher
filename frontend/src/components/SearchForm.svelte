@@ -28,9 +28,9 @@
       });
 
       const json = await res.json();
-      imageUrls.set(json.result?.data);
-
       searchState = SearchState.Finished;
+
+      imageUrls.set(json.result?.data);
     } catch (error) {
       console.error(error);
 

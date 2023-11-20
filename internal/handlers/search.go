@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,8 +17,7 @@ func SearchHandler(c *fiber.Ctx) error {
 		c.Status(fiber.StatusBadRequest).SendString("query parameter is required")
 	}
 
-	// TODO: Search images
-
+	// Redis Client
 	redisClient, err := db.NewRedisClient()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -30,15 +27,23 @@ func SearchHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	var result unsplash.PhotosSearch
+	// Search query in Redis cache
+	var result unsplash.SearchPhotoResult
 	res := redisClient.Client.JSONGet(db.Ctx, q, "$").Val()
 	if res == "" {
 		log.Printf("Key `%s` not found in Redis, searching...\n", q)
 
-		unsplashClient := unsplash.New()
+		// Search images in unsplash api
+		unsplashClient := unsplash.NewUnsplash(nil)
 		log.Printf("Querying unsplash api...")
 
-		unsplashRes, err := unsplashClient.Request("GET", fmt.Sprintf("/search/photos/?query=%s", q))
+		result, _, err := unsplashClient.Search.Photos(
+			&unsplash.SearchOptions{
+				Page:    page,
+				PerPage: 0,
+				Query:   q,
+			},
+		)
 		if err != nil {
 			log.Fatalf(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -48,33 +53,13 @@ func SearchHandler(c *fiber.Ctx) error {
 			})
 		}
 
-		resBody, err := io.ReadAll(unsplashRes.Body)
-		if err != nil {
-			log.Fatalf(err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal Error",
-				"status":  fiber.StatusInternalServerError,
-				"result":  nil,
-			})
-		}
-
-		defer unsplashRes.Body.Close()
-
-		if err := json.Unmarshal(resBody, &result); err != nil {
-			log.Fatalf(err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal Error",
-				"status":  fiber.StatusInternalServerError,
-				"result":  nil,
-			})
-		}
-
-		// Cache result in redis
+		// Set result in Redis cache
 		redisClient.Client.JSONSet(db.Ctx, q, "$", result)
 	} else {
 		log.Printf("Key `%s` found in Redis\n", q)
 
-		var results []unsplash.PhotosSearch
+		// Unmarshal result from Redis cache
+		var results []unsplash.SearchPhotoResult
 		if err = json.Unmarshal([]byte(res), &results); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": "Internal Error",
@@ -82,7 +67,7 @@ func SearchHandler(c *fiber.Ctx) error {
 				"result":  nil,
 			})
 		}
-		result = results[page]
+		result = results[0]
 	}
 
 	// return result as json

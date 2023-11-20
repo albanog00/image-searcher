@@ -1,25 +1,43 @@
 package unsplash
 
 import (
-	"fmt"
-	"log"
+	"bytes"
+	"encoding/json"
 	"net/http"
-	"os"
+
+	"github.com/google/go-querystring/query"
 )
 
-func (unsplashClient *UnsplashClient) Request(method string, endpoint string) (*http.Response, error) {
-	req, err := http.NewRequest(method, unsplashClient.baseUrl+endpoint, nil)
+type request struct {
+	Request *http.Request
+}
+
+func newRequest(method string, e string, qs interface{}, body interface{}) (*request, error) {
+	if e == "" {
+		return nil, &IllegalArgumentError{"endpoint argument cannot be empty"}
+	}
+
+	buf, err := json.Marshal(body)
 	if err != nil {
-		log.Fatalf(err.Error())
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Client-ID %s", os.Getenv("UNSPLASH_ACCESS_KEY")))
-
-	res, err := http.DefaultClient.Do(req)
+	httpRequest, err := http.NewRequest(method, getEndpoint(base)+e, bytes.NewBuffer(buf))
 	if err != nil {
-		log.Fatalf(err.Error())
 		return nil, err
 	}
-	return res, nil
+
+	if qs != nil {
+		values, err := query.Values(qs)
+		if err != nil {
+			return nil, err
+		}
+		httpRequest.URL.RawQuery = values.Encode()
+	}
+
+	req := new(request)
+	req.Request = httpRequest
+	req.Request.Header.Add("Content-Type", "application/json")
+
+	return req, nil
 }
