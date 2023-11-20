@@ -1,4 +1,4 @@
 import { writable } from "svelte/store";
-import type { SearchResult } from "./types";
+import type { SearchPhotoResult } from "./types";
 
-export const imageUrls = writable<SearchResult | undefined>(undefined);
+export const imageUrls = writable<SearchPhotoResult | undefined>(undefined);

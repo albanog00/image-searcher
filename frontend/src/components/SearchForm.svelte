@@ -1,6 +1,6 @@
 <script lang="ts">
   import { imageUrls } from "@/lib/store";
-  import { SearchState, type SearchResult } from "@/lib/types";
+  import { SearchState, type SearchPhotoResult } from "@/lib/types";
   import { api } from "@/lib/api";
   import LoadingSpinner from "./LoadingSpinner.svelte";
 
@@ -17,7 +17,7 @@
 
     searchState = SearchState.Searching;
     try {
-      const res = await api<SearchResult>(`/search?q=${searchQuery}`, {
+      const res = await api<SearchPhotoResult>(`/search?q=${searchQuery}`, {
         method: "GET",
         signal: searchController.signal,
       });
@@ -35,7 +35,7 @@
       console.error(error);
 
       searchController.abort();
-      imageUrls.set({ urls: [] });
+      imageUrls.set({ results: [], total: 0, total_pages: 0 });
 
       searchState = SearchState.Error;
     }
