@@ -13,13 +13,12 @@ type SearchOptions struct {
 }
 
 func (opt *SearchOptions) Valid() bool {
-	if opt.Page == 0 {
-		opt.Page = 1
-	}
-
 	if opt.Query == "" {
 		return false
+	}
 
+	if opt.Page == 0 {
+		opt.Page = 1
 	}
 
 	if opt.PerPage == 0 {

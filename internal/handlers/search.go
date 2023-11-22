@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"log"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"giuseppealbano.dev/img-searcher/internal/db"
@@ -17,6 +18,8 @@ func SearchHandler(c *fiber.Ctx) error {
 		c.Status(fiber.StatusBadRequest).SendString("query parameter is required")
 	}
 
+	q = strings.ToLower(q)
+
 	// Redis Client
 	redisClient, err := db.NewRedisClient()
 	if err != nil {
@@ -28,7 +31,7 @@ func SearchHandler(c *fiber.Ctx) error {
 	}
 
 	// Search query in Redis cache
-	var result unsplash.SearchPhotoResult
+	var result *unsplash.SearchPhotoResult
 	res := redisClient.Client.JSONGet(db.Ctx, q, "$").Val()
 	if res == "" {
 		log.Printf("Key `%s` not found in Redis, searching...\n", q)
@@ -37,13 +40,13 @@ func SearchHandler(c *fiber.Ctx) error {
 		unsplashClient := unsplash.NewUnsplash(nil)
 		log.Printf("Querying unsplash api...")
 
-		result, _, err := unsplashClient.Search.Photos(
-			&unsplash.SearchOptions{
-				Page:    page,
-				PerPage: 0,
-				Query:   q,
-			},
-		)
+		searchOptions := &unsplash.SearchOptions{
+			Page:    page,
+			PerPage: 0,
+			Query:   q,
+		}
+
+		result, _, err = unsplashClient.Search.Photos(searchOptions)
 		if err != nil {
 			log.Fatalf(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -59,7 +62,7 @@ func SearchHandler(c *fiber.Ctx) error {
 		log.Printf("Key `%s` found in Redis\n", q)
 
 		// Unmarshal result from Redis cache
-		var results []unsplash.SearchPhotoResult
+		var results []*unsplash.SearchPhotoResult
 		if err = json.Unmarshal([]byte(res), &results); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": "Internal Error",
