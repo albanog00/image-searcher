@@ -23,7 +23,10 @@ func (opt *SearchOptions) Valid() bool {
 
 	if opt.PerPage == 0 {
 		opt.PerPage = 10
+	} else if opt.PerPage > 30 {
+		opt.PerPage = 30
 	}
+
 	return true
 }
 

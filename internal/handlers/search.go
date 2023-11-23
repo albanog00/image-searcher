@@ -12,11 +12,12 @@ import (
 
 func SearchHandler(c *fiber.Ctx) error {
 	// Retrieves query from url string
-	page := c.QueryInt("page")
 	q := c.Query("q")
 	if q == "" {
 		c.Status(fiber.StatusBadRequest).SendString("query parameter is required")
 	}
+	page := c.QueryInt("page")
+	perPage := c.QueryInt("per_page")
 
 	q = strings.ToLower(q)
 
@@ -41,9 +42,9 @@ func SearchHandler(c *fiber.Ctx) error {
 		log.Printf("Querying unsplash api...")
 
 		searchOptions := &unsplash.SearchOptions{
-			Page:    page,
-			PerPage: 0,
 			Query:   q,
+			Page:    page,
+			PerPage: perPage,
 		}
 
 		result, _, err = unsplashClient.Search.Photos(searchOptions)

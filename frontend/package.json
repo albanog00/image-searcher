@@ -14,8 +14,9 @@
     "@astrojs/svelte": "^4.0.3",
     "@astrojs/tailwind": "^5.0.2",
     "astro": "^3.5.3",
-    "svelte": "^4.0.0",
     "clsx": "^2.0.0",
+    "nanostores": "^0.9.5",
+    "svelte": "^4.0.0",
     "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {

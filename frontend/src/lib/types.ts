@@ -5,6 +5,12 @@ export enum SearchState {
     Error,
 }
 
+export type SearchPaginationQuery = {
+    page: number;
+    perPage: number;
+    autoPaging: boolean;
+}
+
 export interface Result<T> {
     message: string,
     status: number,
