@@ -8,6 +8,7 @@ export enum SearchState {
 export type SearchPaginationQuery = {
     page: number;
     perPage: number;
+    totalPages: number;
     autoPaging: boolean;
 }
 

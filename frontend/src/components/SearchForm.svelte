@@ -1,10 +1,7 @@
 <script lang="ts">
   import { api } from "@/lib/api";
-  import {
-    imageUrls,
-    searchPaginationQuery,
-    searchImageQuery,
-  } from "@/lib/store";
+  import { photos, searchPaginationQuery, searchImageQuery } from "@/lib/store";
+  import { search } from "@/lib/search";
   import { SearchState, type SearchPhotoResult } from "@/lib/types";
 
   import LoadingSpinner from "./Icons/LoadingSpinner.svelte";
@@ -16,20 +13,15 @@
   async function onSubmit(event: Event) {
     searchState = SearchState.Searching;
     try {
-      const res = await api<SearchPhotoResult>(
-        `/search?q=${$searchImageQuery}&page=${$searchPaginationQuery?.page}&per_page=${$searchPaginationQuery?.perPage}`,
-        {
-          method: "GET",
-        },
-      );
-
+      const res = await search();
       const json = await res.json();
-      searchState = SearchState.Finished;
 
-      imageUrls.set(json.result?.data);
+      searchState = SearchState.Finished;
+      photos.set(json.result?.data);
     } catch (error) {
       console.error(error);
-      imageUrls.set(undefined);
+
+      photos.set(undefined);
       searchState = SearchState.Error;
     }
   }

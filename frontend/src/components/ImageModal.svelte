@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Photo } from "@/lib/types";
+  import { cubicInOut } from "svelte/easing";
+  import { blur } from "svelte/transition";
 
   export let photo: Photo;
   export let closeFullImage: (event: Event) => void;
@@ -13,7 +15,10 @@
 
 <svelte:window on:keydown={handleKey} />
 
-<div class="fixed bottom-0 left-0 right-0 top-0 z-40">
+<div
+  class="fixed bottom-0 left-0 right-0 top-0 z-40"
+  transition:blur={{ duration: 300 }}
+>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
@@ -26,7 +31,7 @@
     >
       <div class="flex justify-between">
         <span class="self-start text-start italic text-gray-500"
-          >by <a href={photo.user.links.self} class="font-semibold text-black">
+          >by <a href={photo.links.html} class="font-semibold text-black">
             {photo.user.username}
           </a></span
         >
@@ -38,6 +43,7 @@
         </button>
       </div>
       <img
+        transition:blur={{ delay: 200 }}
         alt="gallery"
         class="max-h-[90vh] max-w-[90vw] rounded-lg shadow-xl drop-shadow-xl"
         loading="eager"
