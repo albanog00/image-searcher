@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { api } from "@/lib/api";
-  import { photos, searchPaginationQuery, searchImageQuery } from "@/lib/store";
+  import { photos, searchImageQuery } from "@/lib/store";
   import { search } from "@/lib/search";
-  import { SearchState, type SearchPhotoResult } from "@/lib/types";
+  import { SearchState } from "@/lib/types";
 
   import LoadingSpinner from "./Icons/LoadingSpinner.svelte";
   import ImageGallery from "./ImageGallery.svelte";

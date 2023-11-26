@@ -4,11 +4,6 @@
   import Separator from "./Separator.svelte";
   import PaginationPage from "./PaginationPage.svelte";
   import { blur } from "svelte/transition";
-
-  let autoPaging: boolean;
-  searchPaginationQuery.subscribe((query) => {
-    autoPaging = query.autoPaging;
-  });
 </script>
 
 {#if $photos}
@@ -21,7 +16,7 @@
         <Image {photo} />
       {/each}
     </section>
-    {#if autoPaging}
+    {#if $searchPaginationQuery.autoPaging}
       <div
         class="m-auto w-min animate-bounce cursor-pointer drop-shadow-lg"
         transition:blur={{ duration: 300 }}
