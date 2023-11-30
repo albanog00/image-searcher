@@ -1,14 +1,26 @@
 import { api } from "./api";
-import type { SearchPhotoResult } from "./types";
+import { SearchState, type SearchPhotoResult } from "./types";
 
-import { searchImageQuery, searchPaginationQuery } from "./store";
+import { photos, searchImageQuery, searchPaginationQuery, searchState } from "./store";
 
 export async function search() {
     const paginationParams = searchPaginationQuery.get();
-    return await api<SearchPhotoResult>(
-        `/search?q=${searchImageQuery.get()}&page=${paginationParams.page}&per_page=${paginationParams.perPage}`,
-        {
-            method: "GET",
-        },
-    );
+    try {
+        const res = await api<SearchPhotoResult>(
+            `/search?q=${searchImageQuery.get()}&page=${paginationParams.page}&per_page=${paginationParams.perPage}`,
+            {
+                method: "GET",
+            },
+        );
+        searchState.set(SearchState.Searching);
+        const json = await res.json();
+
+        searchState.set(SearchState.Finished);
+        photos.set(json.result?.data);
+    } catch (error) {
+        console.error(error);
+
+        photos.set(undefined);
+        searchState.set(SearchState.Error);
+    }
 }

@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { search } from "@/lib/search";
   import { photos, searchPaginationQuery } from "@/lib/store";
   import { onMount } from "svelte";
   import { blur } from "svelte/transition";
 
-  let pageToLoad = 0;
+  let pageToLoad = 1;
+  let currentPage = searchPaginationQuery.get().page;
 
   const nextPage = () => {
     searchPaginationQuery.set({
@@ -23,13 +25,17 @@
     if (pageToLoad < 0 || pageToLoad > ($photos?.total_pages ?? 0)) return;
     searchPaginationQuery.set({
       ...searchPaginationQuery.get(),
-      page: pageToLoad,
+      page: pageToLoad - 1,
     });
   };
 
   onMount(() => {
-    const removeListener = searchPaginationQuery.listen((value) => {
+    const removeListener = searchPaginationQuery.listen(async (value) => {
       console.log(value);
+      if (value.page !== currentPage) {
+        await search();
+        currentPage = value.page;
+      }
     });
 
     return () => {
@@ -49,7 +55,7 @@
       class="rounded-lg border-2 border-gray-300 bg-gray-200 px-3 py-1 drop-shadow-md hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
       >&larr;
     </button>
-    {#each { length: 10 } as _, page}
+    {#each { length: $photos?.total_pages ?? 0 } as _, page}
       <button
         on:click={() => jumpToPage(page)}
         disabled={$searchPaginationQuery.page === page}
@@ -75,7 +81,8 @@
     <button
       on:click={() => jumpToPage(pageToLoad)}
       disabled={pageToLoad <= 0 ||
-        pageToLoad > $searchPaginationQuery.totalPages}
+        pageToLoad == currentPage ||
+        pageToLoad - 1 > ($photos?.total_pages ?? 0) - 1}
       class="w-32 gap-2 rounded-md border-2 border-gray-300 bg-indigo-700 p-2 font-medium text-white hover:bg-indigo-500 active:bg-indigo-700 active:ring active:ring-violet-300 disabled:cursor-not-allowed disabled:opacity-70"
     >
       Go
