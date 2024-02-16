@@ -31,12 +31,10 @@
 
   onMount(() => {
     const removeListener = searchPaginationQuery.listen(async (value) => {
-      console.log(`value: ${value.page}, currentPage: ${currentPage}`);
       if (value.page !== currentPage) {
         currentPage = value.page;
         await search();
       }
-      console.log(currentPage);
     });
 
     return () => {

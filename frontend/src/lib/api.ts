@@ -14,7 +14,7 @@ export async function api<T>(
     duration: undefined,
   });
 
-  console.log(init?.method, res.url, `${elapsed.duration.toFixed(3)}ms`);
+  // console.log(init?.method, res.url, `${elapsed.duration.toFixed(3)}ms`);
 
   return res;
 }
