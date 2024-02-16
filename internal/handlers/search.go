@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"giuseppealbano.dev/img-searcher/internal/db"
@@ -32,10 +34,11 @@ func SearchHandler(c *fiber.Ctx) error {
 	}
 
 	// Search query in Redis cache
+	query := fmt.Sprintf("query=%s&page=%d&per_page=%d", q, page, perPage)
 	var result *unsplash.SearchPhotoResult
-	res := redisClient.Client.JSONGet(db.Ctx, q, "$").Val()
-	if res == "" {
-		log.Printf("Key `%s` not found in Redis, searching...\n", q)
+	res, err := redisClient.Client.Get(db.Ctx, query).Result()
+	if err != nil {
+		log.Printf("Key `%s` not found in Redis, searching...\n", query)
 
 		// Search images in unsplash api
 		unsplashClient := unsplash.NewUnsplash(nil)
@@ -58,20 +61,36 @@ func SearchHandler(c *fiber.Ctx) error {
 		}
 
 		// Set result in Redis cache
-		redisClient.Client.JSONSet(db.Ctx, q, "$", result)
-	} else {
-		log.Printf("Key `%s` found in Redis\n", q)
-
-		// Unmarshal result from Redis cache
-		var results []*unsplash.SearchPhotoResult
-		if err = json.Unmarshal([]byte(res), &results); err != nil {
+		json, err := json.Marshal(result)
+		if err != nil {
+			log.Println(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": "Internal Error",
 				"status":  fiber.StatusInternalServerError,
 				"result":  nil,
 			})
 		}
-		result = results[0]
+
+		err = redisClient.Client.Set(db.Ctx, query, json, time.Minute*10).Err()
+		if err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Internal Error",
+				"status":  fiber.StatusInternalServerError,
+				"result":  nil,
+			})
+		}
+	} else {
+		log.Printf("Key `%s` found in Redis\n", query)
+
+		// Unmarshal result from Redis cache
+		if err = json.Unmarshal([]byte(res), &result); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Internal Error",
+				"status":  fiber.StatusInternalServerError,
+				"result":  nil,
+			})
+		}
 	}
 
 	// return result as json
@@ -80,6 +99,7 @@ func SearchHandler(c *fiber.Ctx) error {
 		"status":  fiber.StatusOK,
 		"result": fiber.Map{
 			"data":  result,
-			"count": len(result.Results)},
+			"count": len(result.Results),
+		},
 	})
 }

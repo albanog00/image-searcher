@@ -1,12 +1,29 @@
 {
+  "$schema": "https://json.schemastore.org/prettierrc",
   "plugins": [
     "prettier-plugin-astro",
     "prettier-plugin-svelte",
     "prettier-plugin-tailwindcss"
   ],
   "overrides": [
-    { "files": "*.astro", "options": { "parser": "astro" } },
-    { "files": "*.svelte", "options": { "parser": "svelte" } },
-    { "files": "*.tsx", "options": { "parser": "tsx" } }
-  ]
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "astro"
+      }
+    },
+    {
+      "files": "*.svelte",
+      "options": {
+        "parser": "svelte"
+      }
+    },
+    {
+      "files": "*.tsx",
+      "options": {
+        "parser": "tsx"
+      }
+    }
+  ],
+  "tabWidth": 2
 }

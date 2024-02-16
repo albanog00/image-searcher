@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { photos, searchImageQuery, searchState } from "@/lib/store";
+  import { searchImageQuery, searchState } from "@/lib/store";
   import { search } from "@/lib/search";
   import { SearchState } from "@/lib/types";
 
@@ -10,7 +10,7 @@
 
 <div class="flex flex-col items-center justify-center gap-4">
   <div class="flex flex-row gap-2">
-    <form class="grid grid-flow-col gap-2" on:submit|preventDefault={search}>
+    <form class="grid grid-flow-col gap-2" on:submit|preventDefault={() => search(1)}>
       <input
         required
         bind:value={$searchImageQuery}

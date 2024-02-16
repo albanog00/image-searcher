@@ -43,7 +43,7 @@
 {:else}
   <div class="flex" transition:fade={{ duration: 300 }}>
     <Skeleton
-      styles="h-[240px] w-[350px] rounded-lg border-4 border-white  shadow-xl drop-shadow-xl"
+      class="h-[240px] w-[350px] rounded-lg border-4 border-white shadow-xl drop-shadow-xl"
     />
   </div>
 {/if}

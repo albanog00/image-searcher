@@ -24,7 +24,7 @@ func NewRedisClient() (*RedisClient, error) {
 	})
 
 	if err := client.Ping(Ctx).Err(); err != nil {
-		return nil, err
+		return nil, errors.New("Can't reach RedisClient")
 	}
 
 	return &RedisClient{
